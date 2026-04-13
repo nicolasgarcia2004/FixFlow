@@ -22,7 +22,7 @@
   --color-surface: #ffffff;
   --color-surface-alt: #f5f3f0;
   --color-border: #e2ddd8;
-  --color-border-focus: #b84246;
+  --color-border-focus: #4f6963;
   --color-text: #1a1a1a;
   --color-text-secondary: #5c5650;
   --color-text-muted: #8a8279;
@@ -159,7 +159,7 @@ a:hover {
 .form-select:focus,
 .form-textarea:focus {
   border-color: var(--color-border-focus);
-  box-shadow: 0 0 0 3px rgba(184, 66, 70, 0.1);
+  box-shadow: 0 0 0 3px rgba(79, 105, 99, 0.12);
 }
 
 .form-input::placeholder {
@@ -232,12 +232,12 @@ a:hover {
 
 .btn-outline {
   background-color: transparent;
-  color: var(--color-primary);
-  border-color: var(--color-primary);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
 }
 
 .btn-outline:hover:not(:disabled) {
-  background-color: var(--color-primary);
+  background-color: var(--color-accent);
   color: var(--color-text-inverse);
 }
 

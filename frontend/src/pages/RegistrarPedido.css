@@ -1,25 +1,54 @@
 /* ===================================================
-   RegistrarPedido — Formulario de creación de servicio
+   RegistrarPedido — Formulario completo de orden
    =================================================== */
 
 .registrar-page {
-  max-width: 760px;
+  max-width: 800px;
   margin: 0 auto;
   padding: var(--space-8) var(--space-6);
 }
 
+/* Header de la página */
 .registrar-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   margin-bottom: var(--space-8);
+  gap: var(--space-4);
 }
 
 .registrar-header h1 {
   font-size: var(--font-size-xl);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-1);
 }
 
 .registrar-header p {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
+}
+
+.order-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: 50px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: rgba(79, 105, 99, 0.12);
+  color: var(--color-accent);
+  border: 1px solid rgba(79, 105, 99, 0.25);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.order-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
 }
 
 /* Secciones del formulario */
@@ -28,10 +57,13 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-5);
 }
 
 .form-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
   color: var(--color-secondary);
@@ -40,9 +72,29 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.section-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  background-color: rgba(79, 105, 99, 0.1);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Grid de campos */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: var(--space-5);
 }
 
@@ -52,10 +104,44 @@
   gap: var(--space-5);
 }
 
+/* Checkboxes de accesorios */
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.checkbox-item input[type="checkbox"] {
+  accent-color: var(--color-accent);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.checkbox-item label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.otros-accesorios {
+  margin-top: var(--space-2);
+}
+
 /* Tabla de productos agregados */
 .productos-table-wrapper {
   overflow-x: auto;
   margin-top: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
 }
 
 .productos-table {
@@ -68,9 +154,8 @@
   text-align: left;
   padding: var(--space-3) var(--space-4);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
-  background-color: var(--color-surface-alt);
-  border-bottom: 1px solid var(--color-border);
+  color: var(--color-accent);
+  background-color: rgba(79, 105, 99, 0.06);
   font-size: var(--font-size-xs);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -78,12 +163,12 @@
 
 .productos-table td {
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border);
   color: var(--color-text);
 }
 
 .productos-table .col-acciones {
-  width: 60px;
+  width: 50px;
   text-align: center;
 }
 
@@ -105,7 +190,7 @@
 /* Row de agregar producto */
 .producto-add-row {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr 90px auto;
   gap: var(--space-3);
   align-items: end;
 }
@@ -117,8 +202,10 @@
   align-items: center;
   gap: var(--space-3);
   margin-top: var(--space-5);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border);
+  padding: var(--space-4);
+  background-color: rgba(79, 105, 99, 0.04);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(79, 105, 99, 0.12);
 }
 
 .costo-label {
@@ -130,7 +217,7 @@
 .costo-valor {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
-  color: var(--color-secondary);
+  color: var(--color-accent);
 }
 
 /* Acciones del formulario */
@@ -155,7 +242,12 @@
     padding: var(--space-5) var(--space-4);
   }
 
-  .form-row {
+  .registrar-header {
+    flex-direction: column;
+  }
+
+  .form-row,
+  .form-row-3 {
     grid-template-columns: 1fr;
   }
 
@@ -178,5 +270,10 @@
   .costo-resumen {
     flex-direction: column;
     align-items: flex-end;
+  }
+
+  .checkbox-group {
+    flex-direction: column;
+    gap: var(--space-2);
   }
 }
