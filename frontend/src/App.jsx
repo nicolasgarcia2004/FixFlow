@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Navbar from './components/Navbar'
 import Login from './pages/Login'
 import RegistrarPedido from './pages/RegistrarPedido'
+import DetallePedido from './pages/DetallePedido'
 
 function App() {
   const { isAuthenticated, cargando } = useAuth()
@@ -27,6 +28,12 @@ function App() {
         <Route path="/pedidos/nuevo" element={
           <ProtectedRoute>
             <RegistrarPedido />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/pedidos/:id" element={
+          <ProtectedRoute>
+            <DetallePedido />
           </ProtectedRoute>
         } />
 

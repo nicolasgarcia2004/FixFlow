@@ -207,9 +207,14 @@ function RegistrarPedido() {
           <h1>Registrar Orden de Servicio</h1>
           <p>Completa la información del equipo recibido en el taller.</p>
         </div>
-        <div className="order-status-badge">
-          <span className="order-status-dot"></span>
-          Nuevo
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 'var(--space-2)' }}>
+          <div className="order-status-badge">
+            <span className="order-status-dot"></span>
+            Nuevo
+          </div>
+          <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+            Técnico Registrando: <strong>{useAuth().usuario?.nombre}</strong>
+          </span>
         </div>
       </div>
 
@@ -222,7 +227,6 @@ function RegistrarPedido() {
         {/* === SECCIÓN 1: Información del cliente === */}
         <div className="form-section">
           <h2 className="form-section-title">
-            <span className="section-icon">👤</span>
             Información del Cliente
           </h2>
 
@@ -290,7 +294,6 @@ function RegistrarPedido() {
         {/* === SECCIÓN 2: Detalles del hardware === */}
         <div className="form-section">
           <h2 className="form-section-title">
-            <span className="section-icon">💻</span>
             Detalles del Hardware
           </h2>
 
@@ -401,7 +404,6 @@ function RegistrarPedido() {
         {/* === SECCIÓN 3: Diagnóstico y problema === */}
         <div className="form-section">
           <h2 className="form-section-title">
-            <span className="section-icon">🔍</span>
             Diagnóstico y Problema
           </h2>
 
@@ -453,7 +455,6 @@ function RegistrarPedido() {
         {/* === SECCIÓN 4: Repuestos === */}
         <div className="form-section">
           <h2 className="form-section-title">
-            <span className="section-icon">🔧</span>
             Repuestos Utilizados
           </h2>
 
