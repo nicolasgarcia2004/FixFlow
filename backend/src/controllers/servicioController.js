@@ -181,11 +181,11 @@ const actualizarServicio = async (req, res) => {
     // Actualizar servicio
     await pool.query(`
       UPDATE servicios 
-      SET estado = COALESCE($1, estado), 
-          diagnostico = COALESCE($2, diagnostico), 
-          solucion = COALESCE($3, solucion),
-          problema_reportado = COALESCE($4, problema_reportado),
-          costo_total = COALESCE($5, costo_total),
+      SET estado = COALESCE($1::VARCHAR, estado), 
+          diagnostico = COALESCE($2::TEXT, diagnostico), 
+          solucion = COALESCE($3::TEXT, solucion),
+          problema_reportado = COALESCE($4::TEXT, problema_reportado),
+          costo_total = COALESCE($5::NUMERIC, costo_total),
           fecha_actualizacion = CURRENT_TIMESTAMP
       WHERE id_servicio = $6
     `, [

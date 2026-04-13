@@ -61,6 +61,7 @@ function RegistrarPedido() {
   // Estado del formulario
   const [error, setError] = useState('')
   const [exito, setExito] = useState('')
+  const [nuevoIdPedido, setNuevoIdPedido] = useState(null)
   const [cargando, setCargando] = useState(false)
 
   // Cargar productos al montar
@@ -144,6 +145,7 @@ function RegistrarPedido() {
     e.preventDefault()
     setError('')
     setExito('')
+    setNuevoIdPedido(null)
 
     // Validaciones
     if (!nombreCliente.trim()) {
@@ -182,17 +184,18 @@ function RegistrarPedido() {
         }))
       }
 
-      await crearServicio(token, datos)
-      setExito('Orden de servicio registrada correctamente')
+        const resData = await crearServicio(token, datos)
+        setExito('Orden de servicio registrada correctamente')
+        setNuevoIdPedido(resData.servicio.id_servicio)
 
-      // Limpiar todo
-      setNombreCliente(''); setTelefonoCliente(''); setEmailCliente('')
-      setDireccionCliente(''); setTipoEquipo(''); setMarca(''); setModelo('')
-      setNumeroSerie(''); setAccesoriosCheck({}); setOtrosAccesorios('')
-      setCondicionFisica(''); setProblemaReportado(''); setDiagnostico('')
-      setSolucion(''); setProductosAgregados([])
+        // Limpiar todo
+        setNombreCliente(''); setTelefonoCliente(''); setEmailCliente('')
+        setDireccionCliente(''); setTipoEquipo(''); setMarca(''); setModelo('')
+        setNumeroSerie(''); setAccesoriosCheck({}); setOtrosAccesorios('')
+        setCondicionFisica(''); setProblemaReportado(''); setDiagnostico('')
+        setSolucion(''); setProductosAgregados([])
 
-    } catch (err) {
+      } catch (err) {
       setError(err.message)
     } finally {
       setCargando(false)
@@ -220,7 +223,16 @@ function RegistrarPedido() {
 
       {/* Mensajes */}
       {error && <div className="alert alert-error" style={{marginBottom: 'var(--space-5)'}}>{error}</div>}
-      {exito && <div className="alert alert-success" style={{marginBottom: 'var(--space-5)'}}>{exito}</div>}
+      {exito && (
+        <div className="alert alert-success" style={{marginBottom: 'var(--space-5)', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+          <span>{exito}</span>
+          {nuevoIdPedido && (
+            <button type="button" className="btn btn-outline" onClick={() => navigate(`/pedidos/${nuevoIdPedido}`)} style={{padding: '4px 12px', fontSize: '12px'}}>
+              Ver Orden →
+            </button>
+          )}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
 
