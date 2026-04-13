@@ -1,0 +1,75 @@
+@startuml modelo_er_fixflow
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName Raleway
+skinparam shadowing false
+skinparam roundCorner 8
+
+title Modelo Entidad-Relación — FixFlow
+
+' ===== ENTIDADES =====
+
+entity "usuarios" as usuarios #C8E6C9 {
+    * **id_usuario** : SERIAL <<PK>>
+    --
+    * nombre : VARCHAR(100)
+    * email : VARCHAR(150) <<UNIQUE>>
+    * contrasena : VARCHAR(255)
+    * tipo_usuario : VARCHAR(10)
+      //(ADMIN | CLIENTE)//
+    * telefono : VARCHAR(20)
+    * fecha_registro : TIMESTAMP
+}
+
+entity "servicios" as servicios #BBDEFB {
+    * **id_servicio** : SERIAL <<PK>>
+    --
+    * id_usuario : INTEGER <<FK>>
+    * fecha_ingreso : DATE
+    * estado : VARCHAR(20)
+      //(recibido | reparando | listo | entregado)//
+    * costo_total : DECIMAL(10,2)
+    * diagnostico : TEXT
+    * solucion : TEXT
+    * fecha_actualizacion : TIMESTAMP
+}
+
+entity "productos" as productos #FFE0B2 {
+    * **id_producto** : SERIAL <<PK>>
+    --
+    * nombre : VARCHAR(150)
+    * precio : DECIMAL(10,2)
+}
+
+entity "productos_servicios" as ps #E1BEE7 {
+    * **id_ps** : SERIAL <<PK>>
+    --
+    * id_producto : INTEGER <<FK>>
+    * id_servicio : INTEGER <<FK>>
+    * cantidad : INTEGER
+}
+
+' ===== RELACIONES =====
+
+usuarios ||--o{ servicios : "registra\n(1 a muchos)"
+servicios ||--o{ ps : "tiene\n(1 a muchos)"
+productos ||--o{ ps : "usado en\n(1 a muchos)"
+
+' ===== NOTAS =====
+note right of usuarios
+  La contraseña se almacena
+  hasheada con bcrypt
+end note
+
+note bottom of servicios
+  Estado sigue el flujo:
+  recibido → reparando → listo → entregado
+end note
+
+note right of ps
+  Tabla intermedia para la
+  relación muchos-a-muchos
+  entre productos y servicios
+end note
+
+@enduml

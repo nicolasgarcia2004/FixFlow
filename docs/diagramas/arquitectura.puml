@@ -1,0 +1,106 @@
+@startuml arquitectura_fixflow
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle rectangle
+skinparam defaultFontName Raleway
+skinparam shadowing false
+skinparam roundCorner 12
+
+title Arquitectura del Sistema FixFlow\n(Arquitectura de 3 Capas)
+
+' ===== CAPA DE PRESENTACION =====
+package "Capa de Presentación" as frontend #E8F5E9 {
+    component "React (Vite)" as react #C8E6C9 {
+        component "React Router" as router
+        component "AuthContext" as authCtx
+        component "Páginas" as pages {
+            [Login]
+            [Registrar Pedido]
+            [Editar Pedido]
+            [Informe Tabular]
+            [Informe Estadístico]
+        }
+        component "Componentes\nReutilizables" as shared {
+            [Navbar]
+            [ProtectedRoute]
+            [FormularioPedido]
+        }
+        component "Services\n(Axios/Fetch)" as apiService
+    }
+}
+
+' ===== CAPA DE NEGOCIO =====
+package "Capa de Negocio" as backend #E3F2FD {
+    component "Express.js (Node.js)" as express #BBDEFB {
+        component "Middlewares" as mw {
+            [CORS]
+            [verificarToken (JWT)]
+            [esAdmin]
+            [errorHandler]
+        }
+        component "Rutas (Routes)" as routes {
+            [/api/auth]
+            [/api/servicios]
+            [/api/productos]
+            [/api/informes]
+        }
+        component "Controladores" as controllers {
+            [authController]
+            [servicioController]
+            [productoController]
+            [informeController]
+        }
+    }
+}
+
+' ===== CAPA DE DATOS =====
+package "Capa de Datos" as data #FFF3E0 {
+    database "PostgreSQL\n(Neon Cloud)" as db #FFE0B2 {
+        [usuarios]
+        [servicios]
+        [productos]
+        [productos_servicios]
+    }
+}
+
+' ===== CONEXIONES =====
+react -[#4CAF50]-> express : "HTTP / REST\n(JSON)"
+express -[#2196F3]-> db : "SQL\n(pg Pool)"
+
+' Flujo interno frontend
+router --> pages
+authCtx --> pages
+pages --> apiService
+apiService -[#4CAF50]-> express
+
+' Flujo interno backend
+mw --> routes
+routes --> controllers
+controllers -[#2196F3]-> db
+
+' ===== NOTAS =====
+note right of mw
+  Cada request pasa por:
+  1. CORS
+  2. verificarToken (JWT)
+  3. esAdmin (si aplica)
+  4. errorHandler (global)
+end note
+
+note bottom of db
+  Base de datos alojada en
+  Neon (PostgreSQL serverless)
+  Conexión SSL requerida
+end note
+
+note top of react
+  SPA con Vite como bundler
+  Puerto de desarrollo: 5173
+end note
+
+note top of express
+  Servidor API REST
+  Puerto: 5000
+end note
+
+@enduml

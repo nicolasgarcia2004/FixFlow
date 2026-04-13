@@ -1,0 +1,105 @@
+@startuml api_rest_fixflow
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName Raleway
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam packageStyle rectangle
+
+title Diseño de la API REST — FixFlow\nEndpoints, Autenticación JWT y Middlewares
+
+' ===== CLIENTE =====
+actor "Cliente\n(React App)" as client #C8E6C9
+
+' ===== MIDDLEWARES =====
+package "Middlewares (Express.js)" as mwLayer #F5F5F5 {
+    rectangle "cors()" as cors #E0E0E0
+    rectangle "express.json()" as jsonParser #E0E0E0
+    rectangle "verificarToken(req, res, next)" as authMw #BBDEFB {
+        note right
+          1. Lee header Authorization
+          2. Extrae Bearer <token>
+          3. Verifica con jwt.verify()
+          4. Agrega req.usuario
+          5. Llama next()
+        end note
+    }
+    rectangle "esAdmin(req, res, next)" as adminMw #FFE0B2 {
+        note right
+          Revisa req.usuario.tipo_usuario
+          Si no es ADMIN → 403 Forbidden
+        end note
+    }
+    rectangle "errorHandler(err, req, res, next)" as errMw #FFCDD2
+}
+
+' ===== FLUJO JWT =====
+package "Flujo de Autenticación JWT" as jwtFlow #E8F5E9 {
+    rectangle "POST /api/auth/login" as loginEp #C8E6C9
+    rectangle "Validar credenciales\n(bcrypt.compare)" as validate
+    rectangle "Generar JWT\n(jwt.sign)" as genToken
+    rectangle "Respuesta:\n{ token, usuario }" as response
+
+    loginEp --> validate
+    validate --> genToken
+    genToken --> response
+}
+
+' ===== ENDPOINTS =====
+package "Endpoints de Autenticación\n/api/auth" as authGroup #E8F5E9 {
+    rectangle "POST /register\n→ Registrar usuario nuevo" as register
+    rectangle "POST /login\n→ Iniciar sesión y obtener JWT" as login
+}
+
+package "Endpoints de Servicios\n/api/servicios" as servGroup #E3F2FD {
+    rectangle "GET /\n→ Listar todos los servicios" as getSrv
+    rectangle "GET /:id\n→ Obtener servicio por ID" as getSrvId
+    rectangle "POST /\n→ Crear orden de servicio" as postSrv
+    rectangle "PUT /:id\n→ Editar servicio completo" as putSrv
+    rectangle "PATCH /:id/estado\n→ Cambiar estado del servicio" as patchSrv
+    rectangle "DELETE /:id\n→ Eliminar servicio (Admin)" as delSrv
+}
+
+package "Endpoints de Productos\n/api/productos" as prodGroup #FFF3E0 {
+    rectangle "GET /\n→ Listar productos" as getProd
+    rectangle "POST /\n→ Crear producto (Admin)" as postProd
+    rectangle "PUT /:id\n→ Editar producto (Admin)" as putProd
+    rectangle "DELETE /:id\n→ Eliminar producto (Admin)" as delProd
+}
+
+package "Endpoints Productos-Servicios\n/api/servicios/:id/productos" as psGroup #F3E5F5 {
+    rectangle "POST /\n→ Agregar producto al servicio" as addPS
+    rectangle "DELETE /:idProd\n→ Quitar producto del servicio" as delPS
+}
+
+package "Endpoints de Informes\n/api/informes" as reportGroup #ECEFF1 {
+    rectangle "GET /tabular\n→ Datos para informe tabular\n(filtros por fecha, estado)" as tabular
+    rectangle "GET /estadistico\n→ Datos agregados para gráficas\n(conteos, promedios, totales)" as stats
+}
+
+' ===== FLUJO PRINCIPAL =====
+client --> cors
+cors --> jsonParser
+jsonParser --> authGroup : "Rutas públicas\n(sin token)"
+jsonParser --> authMw : "Rutas protegidas\n(requieren token)"
+authMw --> servGroup
+authMw --> prodGroup
+authMw --> psGroup
+authMw --> reportGroup
+authMw --> adminMw : "Rutas admin"
+adminMw --> delSrv
+adminMw --> postProd
+adminMw --> putProd
+adminMw --> delProd
+
+' ===== NOTA DE RESPUESTAS =====
+note bottom of authGroup
+  Respuestas estandarizadas:
+  ──────────────────────
+  Éxito: { mensaje, datos }
+  Error: { error, detalles }
+  ──────────────────────
+  Códigos: 200, 201, 400, 401, 403, 404, 500
+end note
+
+@enduml

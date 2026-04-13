@@ -1,0 +1,97 @@
+@startuml rutas_frontend_fixflow
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName Raleway
+skinparam shadowing false
+skinparam roundCorner 8
+
+title Esquema de Rutas y Componentes — Frontend React\nFixFlow
+
+' ===== APP ROOT =====
+package "App.jsx" as app #F5F5F5 {
+    rectangle "BrowserRouter" as browserRouter #E0E0E0
+
+    ' ===== LAYOUT GLOBAL =====
+    package "Layout Global" as layout #ECEFF1 {
+        rectangle "Navbar" as navbar #B0BEC5 {
+            note right
+              - Logo FixFlow
+              - Links de navegación
+              - Nombre del usuario
+              - Botón cerrar sesión
+              - Se oculta en /login
+            end note
+        }
+    }
+
+    ' ===== CONTEXT =====
+    package "AuthContext (Provider)" as authCtx #E8F5E9 {
+        rectangle "Estado global:\n- usuario\n- token\n- login()\n- logout()\n- isAuthenticated" as authState #C8E6C9
+    }
+
+    ' ===== RUTAS PUBLICAS =====
+    package "Rutas Públicas" as publicRoutes #FFF3E0 {
+        rectangle "/login\n<LoginPage>" as loginRoute #FFE0B2
+    }
+
+    ' ===== RUTAS PROTEGIDAS =====
+    package "Rutas Protegidas (ProtectedRoute)" as protectedRoutes #E3F2FD {
+        note top
+          ProtectedRoute verifica
+          si hay token válido.
+          Si no → redirige a /login
+        end note
+
+        rectangle "/pedidos/nuevo\n<RegistrarPedido>" as newOrder #BBDEFB
+        rectangle "/pedidos/:id/editar\n<EditarPedido>" as editOrder #BBDEFB
+        rectangle "/informes/tabular\n<InformeTabular>" as tabReport #BBDEFB
+        rectangle "/informes/estadistico\n<InformeEstadistico>" as statReport #BBDEFB
+    }
+
+    ' ===== COMPONENTES REUTILIZABLES =====
+    package "Componentes Reutilizables" as sharedComp #F3E5F5 {
+        rectangle "FormularioPedido\n(usado en Registrar y Editar)" as formPedido #E1BEE7
+        rectangle "TablaServicios\n(tabla con filtros y paginación)" as tablaSrv #E1BEE7
+        rectangle "GraficoEstadistico\n(gráficas con Chart.js)" as grafico #E1BEE7
+        rectangle "ModalConfirmacion\n(confirmar acciones)" as modal #E1BEE7
+    }
+
+    ' ===== SERVICES =====
+    package "Services (API Calls)" as services #FFEBEE {
+        rectangle "authService.js\n- login()\n- register()" as authSvc #FFCDD2
+        rectangle "servicioService.js\n- getAll(), create()\n- update(), delete()\n- cambiarEstado()" as srvSvc #FFCDD2
+        rectangle "productoService.js\n- getAll(), create()\n- update(), delete()" as prodSvc #FFCDD2
+        rectangle "informeService.js\n- getTabular()\n- getEstadistico()" as reportSvc #FFCDD2
+    }
+}
+
+' ===== CONEXIONES =====
+browserRouter --> publicRoutes
+browserRouter --> protectedRoutes
+
+authCtx --> loginRoute : "login()"
+authCtx --> protectedRoutes : "isAuthenticated"
+
+loginRoute -[#FF9800]-> authSvc : "POST /api/auth/login"
+
+newOrder --> formPedido : "usa"
+editOrder --> formPedido : "usa"
+newOrder -[#2196F3]-> srvSvc : "POST /api/servicios"
+editOrder -[#2196F3]-> srvSvc : "PUT /api/servicios/:id"
+
+tabReport --> tablaSrv : "usa"
+tabReport -[#2196F3]-> reportSvc : "GET /api/informes/tabular"
+
+statReport --> grafico : "usa"
+statReport -[#2196F3]-> reportSvc : "GET /api/informes/estadistico"
+
+' ===== FLUJO DE NAVEGACION =====
+note bottom of app
+  **Flujo de navegación:**
+  1. Usuario ingresa → /login
+  2. Login exitoso → redirige a /pedidos/nuevo
+  3. Desde Navbar puede navegar a cualquier vista protegida
+  4. Cerrar sesión → limpia token → redirige a /login
+end note
+
+@enduml
