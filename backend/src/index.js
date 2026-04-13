@@ -5,6 +5,8 @@ require('dotenv').config();
 
 // Importar rutas
 const authRoutes = require('./routes/auth');
+const serviciosRoutes = require('./routes/servicios');
+const productosRoutes = require('./routes/productos');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -15,6 +17,8 @@ app.use(express.json());        // Parsear body como JSON
 
 // --- Rutas ---
 app.use('/api/auth', authRoutes);
+app.use('/api/servicios', serviciosRoutes);
+app.use('/api/productos', productosRoutes);
 
 // Ruta de prueba para verificar que el servidor funciona
 app.get('/api/health', (req, res) => {
