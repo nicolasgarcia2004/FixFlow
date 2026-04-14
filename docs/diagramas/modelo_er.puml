@@ -5,7 +5,7 @@ skinparam defaultFontName Raleway
 skinparam shadowing false
 skinparam roundCorner 8
 
-title Modelo Entidad-Relación — FixFlow
+title Modelo Entidad-Relación — FixFlow\n(Esquema Actual de la Base de Datos)
 
 ' ===== ENTIDADES =====
 
@@ -17,8 +17,8 @@ entity "usuarios" as usuarios #C8E6C9 {
     * contrasena : VARCHAR(255)
     * tipo_usuario : VARCHAR(10)
       //(ADMIN | CLIENTE)//
-    * telefono : VARCHAR(20)
-    * fecha_registro : TIMESTAMP
+      telefono : VARCHAR(20)
+      fecha_registro : TIMESTAMP
 }
 
 entity "servicios" as servicios #BBDEFB {
@@ -27,11 +27,29 @@ entity "servicios" as servicios #BBDEFB {
     * id_usuario : INTEGER <<FK>>
     * fecha_ingreso : DATE
     * estado : VARCHAR(20)
-      //(recibido | reparando | listo | entregado)//
-    * costo_total : DECIMAL(10,2)
-    * diagnostico : TEXT
-    * solucion : TEXT
-    * fecha_actualizacion : TIMESTAMP
+      //(Recibido | Diagnóstico | Reparando | Listo)//
+      costo_total : DECIMAL(10,2)
+    --
+    **Datos del Cliente**
+      nombre_cliente : VARCHAR(100)
+      telefono_cliente : VARCHAR(20)
+      email_cliente : VARCHAR(150)
+      direccion_cliente : TEXT
+    --
+    **Datos del Hardware**
+      tipo_equipo : VARCHAR(50)
+      marca : VARCHAR(100)
+      modelo : VARCHAR(100)
+      numero_serie : VARCHAR(100)
+      accesorios : TEXT
+      condicion_fisica : TEXT
+    --
+    **Diagnóstico**
+      problema_reportado : TEXT
+      diagnostico : TEXT
+      solucion : TEXT
+    --
+      fecha_actualizacion : TIMESTAMP
 }
 
 entity "productos" as productos #FFE0B2 {
@@ -49,27 +67,49 @@ entity "productos_servicios" as ps #E1BEE7 {
     * cantidad : INTEGER
 }
 
+entity "historial_servicios" as historial #FFCDD2 {
+    * **id_historial** : SERIAL <<PK>>
+    --
+      id_servicio : INTEGER <<FK>>
+      id_usuario : INTEGER <<FK>>
+    * accion : VARCHAR(50)
+    * descripcion : TEXT
+      fecha_registro : TIMESTAMP
+}
+
 ' ===== RELACIONES =====
 
 usuarios ||--o{ servicios : "registra\n(1 a muchos)"
 servicios ||--o{ ps : "tiene\n(1 a muchos)"
 productos ||--o{ ps : "usado en\n(1 a muchos)"
+servicios ||--o{ historial : "audita\n(1 a muchos)"
+usuarios ||--o{ historial : "realiza\n(1 a muchos)"
 
 ' ===== NOTAS =====
 note right of usuarios
   La contraseña se almacena
-  hasheada con bcrypt
+  hasheada con bcrypt (10 rondas)
 end note
 
 note bottom of servicios
   Estado sigue el flujo:
-  recibido → reparando → listo → entregado
+  Recibido → Diagnóstico → Reparando → Listo
+  Incluye datos completos del
+  cliente y del hardware recibido
 end note
 
 note right of ps
   Tabla intermedia para la
   relación muchos-a-muchos
   entre productos y servicios
+end note
+
+note right of historial
+  Tabla de auditoría que registra:
+  - Creación de órdenes
+  - Cambios de estado
+  - Notas internas de técnicos
+  ON DELETE CASCADE con servicios
 end note
 
 @enduml
