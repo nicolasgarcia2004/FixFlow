@@ -224,7 +224,7 @@ export default function InformeTabular() {
               value={filtroTecnico}
               onChange={e => setFiltroTecnico(e.target.value)}
             >
-              {tecnicos.map(t => <option key={t} value={t}>{t}</option>)}
+              {tecnicosDisponibles.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
 
