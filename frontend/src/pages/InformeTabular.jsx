@@ -1,8 +1,7 @@
-// Vista Informe Tabular — Tabla de datos con filtros y exportación
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getServicios } from '../services/servicioService'
+import { getInformeTabular, getTecnicosLista } from '../services/informeService'
 import './InformeTabular.css'
 
 const ESTADOS = ['Todos', 'Recibido', 'Diagnóstico', 'Reparando', 'Listo']
@@ -21,6 +20,8 @@ export default function InformeTabular() {
   const navigate = useNavigate()
 
   const [servicios, setServicios] = useState([])
+  const [totalRegistros, setTotalRegistros] = useState(0)
+  const [totalPaginas, setTotalPaginas] = useState(1)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
 
@@ -30,6 +31,7 @@ export default function InformeTabular() {
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
   const [filtroTecnico, setFiltroTecnico] = useState('Todos')
+  const [tecnicosDisponibles, setTecnicosDisponibles] = useState(['Todos'])
 
   // Ordenamiento
   const [ordenCol, setOrdenCol] = useState('id_servicio')
@@ -38,102 +40,54 @@ export default function InformeTabular() {
   // Paginación
   const [paginaActual, setPaginaActual] = useState(1)
 
-  // Cargar datos
+  // Cargar técnicos una sola vez
   useEffect(() => {
-    async function cargar() {
+    async function cargarTecnicos() {
       try {
-        const data = await getServicios(token)
-        setServicios(data)
+        const data = await getTecnicosLista(token)
+        setTecnicosDisponibles(['Todos', ...data])
       } catch (err) {
-        setError(err.message)
-      } finally {
-        setCargando(false)
+        console.error('No se pudieron cargar técnicos', err)
       }
     }
-    cargar()
+    cargarTecnicos()
   }, [token])
 
-  // Obtener lista de técnicos únicos para el filtro
-  const tecnicos = useMemo(() => {
-    const nombres = [...new Set(servicios.map(s => s.nombre_tecnico).filter(Boolean))]
-    return ['Todos', ...nombres.sort()]
-  }, [servicios])
-
-  // Aplicar filtros
-  const datosFiltrados = useMemo(() => {
-    let resultado = [...servicios]
-
-    // Filtro por palabra
-    if (busqueda.trim()) {
-      const termino = busqueda.toLowerCase()
-      resultado = resultado.filter(s =>
-        (s.nombre_cliente || '').toLowerCase().includes(termino) ||
-        (s.tipo_equipo || '').toLowerCase().includes(termino) ||
-        (s.marca || '').toLowerCase().includes(termino) ||
-        (s.modelo || '').toLowerCase().includes(termino) ||
-        (s.problema_reportado || '').toLowerCase().includes(termino) ||
-        (s.numero_serie || '').toLowerCase().includes(termino) ||
-        String(s.id_servicio).includes(termino)
-      )
-    }
-
-    // Filtro por estado
-    if (filtroEstado !== 'Todos') {
-      resultado = resultado.filter(s => s.estado === filtroEstado)
-    }
-
-    // Filtro por técnico
-    if (filtroTecnico !== 'Todos') {
-      resultado = resultado.filter(s => s.nombre_tecnico === filtroTecnico)
-    }
-
-    // Filtro por fecha desde
-    if (fechaDesde) {
-      resultado = resultado.filter(s => {
-        const fecha = new Date(s.fecha_ingreso)
-        return fecha >= new Date(fechaDesde)
-      })
-    }
-
-    // Filtro por fecha hasta
-    if (fechaHasta) {
-      resultado = resultado.filter(s => {
-        const fecha = new Date(s.fecha_ingreso)
-        return fecha <= new Date(fechaHasta + 'T23:59:59')
-      })
-    }
-
-    // Ordenamiento
-    resultado.sort((a, b) => {
-      let valA = a[ordenCol]
-      let valB = b[ordenCol]
-
-      // Manejar tipos
-      if (ordenCol === 'id_servicio' || ordenCol === 'costo_total') {
-        valA = Number(valA) || 0
-        valB = Number(valB) || 0
-      } else if (ordenCol === 'fecha_ingreso') {
-        valA = new Date(valA || 0)
-        valB = new Date(valB || 0)
-      } else {
-        valA = (valA || '').toString().toLowerCase()
-        valB = (valB || '').toString().toLowerCase()
+  // Cargar datos cada vez que cambien los parámetros
+  const cargarDatos = useCallback(async () => {
+    setCargando(true)
+    setError('')
+    try {
+      const params = {
+        busqueda: busqueda.trim() || undefined,
+        estado: filtroEstado !== 'Todos' ? filtroEstado : undefined,
+        tecnico: filtroTecnico !== 'Todos' ? filtroTecnico : undefined,
+        fechaDesde: fechaDesde || undefined,
+        fechaHasta: fechaHasta || undefined,
+        ordenCol,
+        ordenDir,
+        pagina: paginaActual,
+        limite: ITEMS_POR_PAGINA
       }
+      
+      const res = await getInformeTabular(token, params)
+      setServicios(res.datos)
+      setTotalRegistros(res.total)
+      setTotalPaginas(res.totalPaginas || 1)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setCargando(false)
+    }
+  }, [token, busqueda, filtroEstado, filtroTecnico, fechaDesde, fechaHasta, ordenCol, ordenDir, paginaActual])
 
-      if (valA < valB) return ordenDir === 'asc' ? -1 : 1
-      if (valA > valB) return ordenDir === 'asc' ? 1 : -1
-      return 0
-    })
-
-    return resultado
-  }, [servicios, busqueda, filtroEstado, filtroTecnico, fechaDesde, fechaHasta, ordenCol, ordenDir])
-
-  // Paginación
-  const totalPaginas = Math.max(1, Math.ceil(datosFiltrados.length / ITEMS_POR_PAGINA))
-  const datosVisibles = datosFiltrados.slice(
-    (paginaActual - 1) * ITEMS_POR_PAGINA,
-    paginaActual * ITEMS_POR_PAGINA
-  )
+  // Efecto de carga
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      cargarDatos()
+    }, 300) // Debounce corto para la búsqueda
+    return () => clearTimeout(timeout)
+  }, [cargarDatos])
 
   // Resetear página cuando cambian filtros
   useEffect(() => {
@@ -148,6 +102,7 @@ export default function InformeTabular() {
       setOrdenCol(columna)
       setOrdenDir('asc')
     }
+    setPaginaActual(1)
   }
 
   // Ícono de orden
@@ -173,30 +128,47 @@ export default function InformeTabular() {
     })
   }
 
-  // Exportar a CSV
-  const exportarCSV = () => {
-    const encabezados = ['ID', 'Fecha', 'Cliente', 'Tipo Equipo', 'Marca', 'Modelo', 'Estado', 'Problema', 'Costo Total', 'Tecnico']
-    const filas = datosFiltrados.map(s => [
-      s.id_servicio,
-      s.fecha_ingreso,
-      `"${(s.nombre_cliente || '').replace(/"/g, '""')}"`,
-      s.tipo_equipo || '',
-      s.marca || '',
-      s.modelo || '',
-      s.estado || '',
-      `"${(s.problema_reportado || '').replace(/"/g, '""')}"`,
-      s.costo_total || 0,
-      s.nombre_tecnico || ''
-    ])
+  // Exportar a CSV consultando todo al backend
+  const exportarCSV = async () => {
+    try {
+      const params = {
+        busqueda: busqueda.trim() || undefined,
+        estado: filtroEstado !== 'Todos' ? filtroEstado : undefined,
+        tecnico: filtroTecnico !== 'Todos' ? filtroTecnico : undefined,
+        fechaDesde: fechaDesde || undefined,
+        fechaHasta: fechaHasta || undefined,
+        ordenCol,
+        ordenDir,
+        exportar: 'true'
+      }
+      const res = await getInformeTabular(token, params)
+      const datosCompletos = res.datos
+      
+      const encabezados = ['ID', 'Fecha', 'Cliente', 'Tipo Equipo', 'Marca', 'Modelo', 'Estado', 'Problema', 'Costo Total', 'Tecnico']
+      const filas = datosCompletos.map(s => [
+        s.id_servicio,
+        s.fecha_ingreso,
+        `"${(s.nombre_cliente || '').replace(/"/g, '""')}"`,
+        s.tipo_equipo || '',
+        s.marca || '',
+        s.modelo || '',
+        s.estado || '',
+        `"${(s.problema_reportado || '').replace(/"/g, '""')}"`,
+        s.costo_total || 0,
+        s.nombre_tecnico || ''
+      ])
 
-    const csv = [encabezados.join(','), ...filas.map(f => f.join(','))].join('\n')
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `informe_fixflow_${new Date().toISOString().slice(0, 10)}.csv`
-    link.click()
-    URL.revokeObjectURL(url)
+      const csv = [encabezados.join(','), ...filas.map(f => f.join(','))].join('\n')
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `informe_fixflow_${new Date().toISOString().slice(0, 10)}.csv`
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      alert('Error al exportar CSV: ' + err.message)
+    }
   }
 
   if (cargando) {
@@ -213,8 +185,8 @@ export default function InformeTabular() {
           <p>Consulta, filtra y exporta todas las ordenes de servicio registradas.</p>
         </div>
         <div className="informe-count">
-          <strong>{datosFiltrados.length}</strong>
-          <span>{datosFiltrados.length === 1 ? 'resultado' : 'resultados'}</span>
+          <strong>{totalRegistros}</strong>
+          <span>{totalRegistros === 1 ? 'resultado' : 'resultados'}</span>
         </div>
       </div>
 
@@ -291,7 +263,7 @@ export default function InformeTabular() {
 
       {/* Tabla */}
       <div className="tabla-wrapper">
-        {datosVisibles.length > 0 ? (
+        {servicios.length > 0 ? (
           <>
             <div className="tabla-scroll">
               <table className="informe-table">
@@ -323,7 +295,7 @@ export default function InformeTabular() {
                   </tr>
                 </thead>
                 <tbody>
-                  {datosVisibles.map(s => (
+                  {servicios.map(s => (
                     <tr key={s.id_servicio}>
                       <td className="cell-id">#{String(s.id_servicio).padStart(4, '0')}</td>
                       <td className="cell-fecha">{formatFecha(s.fecha_ingreso)}</td>
@@ -359,7 +331,7 @@ export default function InformeTabular() {
             {totalPaginas > 1 && (
               <div className="paginacion">
                 <span>
-                  Mostrando {((paginaActual - 1) * ITEMS_POR_PAGINA) + 1}–{Math.min(paginaActual * ITEMS_POR_PAGINA, datosFiltrados.length)} de {datosFiltrados.length}
+                  Mostrando {((paginaActual - 1) * ITEMS_POR_PAGINA) + 1}–{Math.min(paginaActual * ITEMS_POR_PAGINA, totalRegistros)} de {totalRegistros}
                 </span>
                 <div className="paginacion-btns">
                   <button
