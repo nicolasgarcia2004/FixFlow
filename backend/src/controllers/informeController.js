@@ -37,6 +37,7 @@ const obtenerInformeTabular = async (req, res) => {
         s.modelo ILIKE $${paramCount} OR 
         s.problema_reportado ILIKE $${paramCount} OR 
         s.numero_serie ILIKE $${paramCount} OR 
+        u.nombre ILIKE $${paramCount} OR 
         CAST(s.id_servicio AS TEXT) ILIKE $${paramCount}
       )`;
       params.push(`%${busqueda}%`);

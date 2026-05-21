@@ -26,6 +26,7 @@ export default function InformeTabular() {
   const [error, setError] = useState('')
 
   // Filtros
+  const [busquedaInput, setBusquedaInput] = useState('')
   const [busqueda, setBusqueda] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('Todos')
   const [fechaDesde, setFechaDesde] = useState('')
@@ -113,6 +114,7 @@ export default function InformeTabular() {
 
   // Limpiar filtros
   const limpiarFiltros = () => {
+    setBusquedaInput('')
     setBusqueda('')
     setFiltroEstado('Todos')
     setFechaDesde('')
@@ -197,13 +199,25 @@ export default function InformeTabular() {
         <div className="filtros-row">
           <div className="filtro-group">
             <label className="filtro-label">Buscar</label>
-            <input
-              type="text"
-              className="filtro-input"
-              placeholder="Cliente, equipo, serial, problema..."
-              value={busqueda}
-              onChange={e => setBusqueda(e.target.value)}
-            />
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <input
+                type="text"
+                className="filtro-input"
+                placeholder="Cliente, técnico, serial..."
+                value={busquedaInput}
+                onChange={e => setBusquedaInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') setBusqueda(busquedaInput)
+                }}
+              />
+              <button 
+                className="btn btn-secondary btn-sm" 
+                onClick={() => setBusqueda(busquedaInput)}
+                style={{ padding: '0 var(--space-4)' }}
+              >
+                Buscar
+              </button>
+            </div>
           </div>
 
           <div className="filtro-group">
