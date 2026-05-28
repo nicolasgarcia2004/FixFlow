@@ -47,10 +47,15 @@ function InformeEstadistico() {
   }
 
   if (error) {
+    const esErrorAuth = error.includes('Token inválido') || error.includes('expirado')
     return (
       <div className="dashboard-container">
         <div className="alert alert-error">{error}</div>
-        <button className="btn btn-primary" onClick={cargarDatos}>Reintentar</button>
+        {esErrorAuth ? (
+          <button className="btn btn-primary" onClick={() => { window.location.href = '/login'; localStorage.clear(); }}>Volver a iniciar sesión</button>
+        ) : (
+          <button className="btn btn-primary" onClick={cargarDatos}>Reintentar</button>
+        )}
       </div>
     )
   }

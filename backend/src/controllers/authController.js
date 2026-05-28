@@ -13,7 +13,7 @@ const generarToken = (usuario) => {
       tipo_usuario: usuario.tipo_usuario
     },
     process.env.JWT_SECRET,
-    { expiresIn: '24h' }
+    { expiresIn: '30d' }
   );
 };
 
