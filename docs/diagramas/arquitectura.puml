@@ -23,7 +23,6 @@ package "Capa de Presentación" as frontend #E8F5E9 {
         component "Componentes\nReutilizables" as shared {
             [Navbar]
             [ProtectedRoute]
-            [FormularioPedido]
         }
         component "Services\n(Axios/Fetch)" as apiService
     }
@@ -60,6 +59,7 @@ package "Capa de Datos" as data #FFF3E0 {
         [servicios]
         [productos]
         [productos_servicios]
+        [historial_servicios]
     }
 }
 
