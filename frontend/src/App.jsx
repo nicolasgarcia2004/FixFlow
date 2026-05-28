@@ -7,6 +7,7 @@ import Login from './pages/Login'
 import RegistrarPedido from './pages/RegistrarPedido'
 import DetallePedido from './pages/DetallePedido'
 import InformeTabular from './pages/InformeTabular'
+import InformeEstadistico from './pages/InformeEstadistico'
 
 function App() {
   const { isAuthenticated, cargando } = useAuth()
@@ -41,6 +42,12 @@ function App() {
         <Route path="/informes/tabular" element={
           <ProtectedRoute>
             <InformeTabular />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/informes/estadistico" element={
+          <ProtectedRoute>
+            <InformeEstadistico />
           </ProtectedRoute>
         } />
 

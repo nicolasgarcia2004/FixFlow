@@ -36,3 +36,14 @@ export async function getTecnicosLista(token) {
   if (!res.ok) throw new Error(data.error || 'Error al obtener técnicos')
   return data
 }
+
+// Obtener datos estadísticos consolidados para el dashboard
+export async function getInformeEstadistico(token, filtroFecha = 'todo') {
+  const res = await fetch(`${API_URL}/informes/estadistico?filtroFecha=${filtroFecha}`, {
+    headers: authHeaders(token)
+  })
+  
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || 'Error al obtener estadísticas')
+  return data
+}
