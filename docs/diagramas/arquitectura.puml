@@ -10,7 +10,7 @@ title Arquitectura del Sistema FixFlow\n(Arquitectura de 3 Capas)
 
 ' ===== CAPA DE PRESENTACION =====
 package "Capa de Presentación" as frontend #E8F5E9 {
-    component "React (Vite)" as react #C8E6C9 {
+    component "React v19 (Vite v8)" as react #C8E6C9 {
         component "React Router" as router
         component "AuthContext" as authCtx
         component "Páginas" as pages {
@@ -31,7 +31,7 @@ package "Capa de Presentación" as frontend #E8F5E9 {
 
 ' ===== CAPA DE NEGOCIO =====
 package "Capa de Negocio" as backend #E3F2FD {
-    component "Express.js (Node.js)" as express #BBDEFB {
+    component "Express.js v5.1 (Node.js)" as express #BBDEFB {
         component "Middlewares" as mw {
             [CORS]
             [verificarToken (JWT)]
@@ -89,18 +89,20 @@ end note
 
 note bottom of db
   Base de datos alojada en
-  Neon (PostgreSQL serverless)
-  Conexión SSL requerida
+  Neon Cloud (Distribuida)
+  Motor: PostgreSQL v17
 end note
 
 note top of react
-  SPA con Vite como bundler
-  Puerto de desarrollo: 5173
+  SPA con Vite v8
+  React v19
+  Librería gráfica: Recharts
 end note
 
 note top of express
-  Servidor API REST
-  Puerto: 5000
+  Servidor API REST (Node.js)
+  Express.js v5.1
+  Expone 15 endpoints asíncronos
 end note
 
 @enduml
